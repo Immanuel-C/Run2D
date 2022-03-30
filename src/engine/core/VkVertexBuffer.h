@@ -26,10 +26,15 @@ namespace Run {
 		public:
 			VertexBuffer(Vertex* vertices, size_t verticesSize);
 
+			VkBuffer& getVkBuffer();
+
 			void destroy();
 		private:
+			uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
 			Context& m_context = Context::get();
 			VkBuffer m_buffer;
+			VkDeviceMemory m_bufferMemory;
 		};
 	}
 }

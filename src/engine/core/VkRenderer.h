@@ -12,14 +12,14 @@ namespace Run {
 		public:
 			Renderer(GraphicsPipeline& graphicsPipeline);
 
-			void draw();
+			void draw(VertexBuffer& buffer);
 
 			void destroy();
 		private:
 			void createSync();
 			void createCommandPool();
 			void allocateCommandBuffer();
-			void recordCommandBuffer(uint32_t imageIndex);
+			void recordCommandBuffer(uint32_t imageIndex, VertexBuffer& buffer);
 
 			void recreate();
 

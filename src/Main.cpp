@@ -1,4 +1,5 @@
 ﻿#include "VkContext.h"
+#include "VkVertexBuffer.h"
 #include "VkGraphicsPipeline.h"
 #include "VkRenderer.h"
 #include "Window.h"
@@ -21,8 +22,15 @@ int main(int argc, char** argv) {
     Run::Vk::Context& context = Run::Vk::Context::get();
     context.init(window);
 
+    std::array<Run::Vk::Vertex, 3> vertices {
+        Run::Vk::Vertex{ { 0.0f, -0.5f }, { 1.0f, 1.0f, 1.0f } },
+        Run::Vk::Vertex{ { 0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f } },
+        Run::Vk::Vertex{ {-0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f } }
+    };
+
+    Run::Vk::VertexBuffer vertBuf{ vertices.data(), vertices.size() };
     
-    Run::Vk::GraphicsPipeline graphicsPipeline = {
+    Run::Vk::GraphicsPipeline graphicsPipeline {
         "assets/shaders/bin/BasicShader.glsl.vert.spv",
         "assets/shaders/bin/BasicShader.glsl.frag.spv"
     };
@@ -32,7 +40,7 @@ int main(int argc, char** argv) {
     bool isFullscreen = false;
 
     while(!window.shouldClose()) {
-        renderer.draw();
+        renderer.draw(vertBuf);
 
         if (window.isKeyDown(GLFW_KEY_F)) {
             isFullscreen = !isFullscreen;
@@ -43,6 +51,7 @@ int main(int argc, char** argv) {
         window.getInputEvents();
     }
 
+    vertBuf.destroy();
     renderer.destroy();
     graphicsPipeline.destroy();
     context.destroy();

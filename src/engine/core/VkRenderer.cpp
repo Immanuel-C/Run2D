@@ -30,7 +30,7 @@ namespace Run {
             #undef max
         #endif
 
-        void Renderer::draw()
+        void Renderer::draw(VertexBuffer& buffer)
         {
 
             VK_CHECK(vkWaitForFences
@@ -66,7 +66,7 @@ namespace Run {
             VK_CHECK(vkResetFences(m_context.device, 1, &m_sync.inFlightFences[m_currentFrame]));
 
 
-            recordCommandBuffer(imageIndex);
+            recordCommandBuffer(imageIndex, buffer);
 
             VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
@@ -173,7 +173,7 @@ namespace Run {
             VK_CHECK(vkAllocateCommandBuffers(m_context.device, &allocInfo, m_commandBuffers.data()));
         }
 
-        void Renderer::recordCommandBuffer(uint32_t imageIndex)
+        void Renderer::recordCommandBuffer(uint32_t imageIndex, VertexBuffer& buffer)
         {
             VkCommandBufferBeginInfo beginInfo{};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -215,6 +215,8 @@ namespace Run {
                     vkCmdBeginRenderPass(m_commandBuffers[m_currentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
                     {
                         vkCmdBindPipeline(m_commandBuffers[m_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline.getVkPipeline());
+                        VkDeviceSize offsets[] = { 0 };
+                        vkCmdBindVertexBuffers(m_commandBuffers[m_currentFrame], 0, 1, &buffer.getVkBuffer(), offsets);
 
                         vkCmdDraw(m_commandBuffers[m_currentFrame], 3, 1, 0, 0);
                     }
