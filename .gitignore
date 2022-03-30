@@ -11,22 +11,19 @@
 *.gch
 *.pch
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
 
 # Fortran module files
 *.mod
 *.smod
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
 
-# Executables
-*.exe
-*.out
-*.app
+bin
+bin-int
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+.vscode
+.vs
+Run.log
+VkRun.log
