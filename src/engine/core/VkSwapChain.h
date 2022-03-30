@@ -14,14 +14,16 @@
 #include "VkDevice.h"
 #include "VkPhysicalDevice.h"
 #include "VkGraphicsPipeline.h"
+#include "VkFlags.h"
 
 namespace Run {
     namespace Vk {
         class SwapChain
         {
         public:
-            SwapChain(Device& device, PhysicalDevice& physicalDevice, GraphicsPipeline& graphicsPipeline, Surface& surface, GLFWwindow*& window, VkSurfaceFormatKHR format, VkPresentModeKHR presentMode, VkExtent2D extent);
+            SwapChain(Device& device, PhysicalDevice& physicalDevice, GraphicsPipeline& graphicsPipeline, Surface& surface, GLFWwindow*& window, VkSurfaceFormatKHR format, VkPresentModeKHR presentMode, VkExtent2D extent, VkSwapchainKHR oldSwapChain);
             SwapChain() {}
+
 
             VkSwapchainKHR& getVkSwapChain();
 
@@ -31,13 +33,13 @@ namespace Run {
             VkExtent2D getSwapChainExtent();
             VkFormat getSwapChainImageFormat();
 
-            void destroy();
+            void destroy(int flags = 0);
 
             operator VkSwapchainKHR() { return m_swapChain; }
         private:
 
 
-            void createSwapChain(Device& device, PhysicalDevice& physicalDevice, Surface& surface);
+            void createSwapChain(Device& device, PhysicalDevice& physicalDevice, Surface& surface, VkSwapchainKHR oldSwapChain);
             void createImageViews(Device& device);
             void createFramebuffers(Device& device, Run::Vk::GraphicsPipeline& graphicsPipeline);
 

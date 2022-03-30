@@ -3,7 +3,11 @@
 
 namespace Run {
     namespace Vk {
-        GraphicsPipeline::GraphicsPipeline(const std::string& vertPath, const std::string& fragPath)  {
+        GraphicsPipeline::GraphicsPipeline(const std::string& vertPath, const std::string& fragPath) 
+            : m_vertFileName { vertPath }, 
+              m_fragFileName { fragPath }
+        {
+
             createRenderPass();
             createShaders(vertPath, fragPath);
             createPipelineLayout();
@@ -15,6 +19,10 @@ namespace Run {
         VkPipelineLayout& GraphicsPipeline::getVkPipelineLayout() { return m_pipelineLayout; }
 
         VkPipeline& GraphicsPipeline::getVkPipeline() { return m_pipeline; }
+
+        std::string GraphicsPipeline::getVertexShaderFilePath() { return m_vertFileName; }
+
+        std::string GraphicsPipeline::getFragmentShaderFilePath() { return m_fragFileName; }
 
         void GraphicsPipeline::destroy() {
             I_DEBUG_LOG_INFO("Destroying graphics pipeline... | RunEngine");

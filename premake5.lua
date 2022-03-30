@@ -9,12 +9,15 @@ workspace "Run"
     end
 
     newaction {
-        trigger     = "clean",
+        trigger = "clean",
         description = "Clean the binaries",
-        execute     = function ()
+        execute = function ()
            print "Cleaning the build..."
-           os.remove ("./bin/" .. ENGINE_NAME.. ".exe")
-           os.remove ("./bin/" .. ENGINE_NAME.. ".pdb")
+           os.remove ("./bin/" .. ENGINE_NAME.. "/Debug/" .. ENGINE_NAME .. ".exe")
+           os.remove ("./bin/" .. ENGINE_NAME.. "/Debug/" .. ENGINE_NAME .. ".pdb")
+
+           os.remove ("./bin/" .. ENGINE_NAME.. "/Release/" .. ENGINE_NAME .. ".exe")
+           os.remove ("./bin/" .. ENGINE_NAME.. "/Release/" .. ENGINE_NAME .. ".pdb")
            os.rmdir "./bin-int"
            print "Done!"
         end

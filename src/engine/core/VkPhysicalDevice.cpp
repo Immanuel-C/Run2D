@@ -54,7 +54,10 @@ namespace Run {
 
         VkPhysicalDevice& PhysicalDevice::getVkPhysicalDevice() { return m_device; }
         QueueFamilyIndices PhysicalDevice::getQueueFamilyIndices() { return m_queueIndices; }
-        SwapChainDetails PhysicalDevice::getSwapChainDetails() { return m_swapChainDetails; }
+        SwapChainDetails PhysicalDevice::getSwapChainDetails() { 
+            querySwapChainSupport(m_device);
+            return m_swapChainDetails; 
+        }
 
         void PhysicalDevice::findQueueFamilies(VkPhysicalDevice& device) {
             uint32_t queueFamilyCount = 0;

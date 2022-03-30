@@ -3,6 +3,7 @@
 #include "VkSwapChain.h"
 #include "VkGraphicsPipeline.h"
 #include "Window.h"
+#include "Ref.h"
 
 namespace Run {
 	namespace Vk {
@@ -19,6 +20,8 @@ namespace Run {
 			void createCommandPool();
 			void allocateCommandBuffer();
 			void recordCommandBuffer(uint32_t imageIndex);
+
+			void recreate();
 
 			uint32_t m_currentFrame = 0;
 

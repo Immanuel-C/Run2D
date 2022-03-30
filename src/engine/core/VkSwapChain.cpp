@@ -2,19 +2,19 @@
 
 namespace Run {
     namespace Vk {
-        SwapChain::SwapChain(Device& device, PhysicalDevice& physicalDevice, GraphicsPipeline& graphicsPipeline, Surface& surface, GLFWwindow*& window, VkSurfaceFormatKHR format, VkPresentModeKHR presentMode, VkExtent2D extent)
+        SwapChain::SwapChain(Device& device, PhysicalDevice& physicalDevice, GraphicsPipeline& graphicsPipeline, Surface& surface, GLFWwindow*& window, VkSurfaceFormatKHR format, VkPresentModeKHR presentMode, VkExtent2D extent, VkSwapchainKHR oldSwapChain)
             : m_window{ window }, 
               m_device{ &device },
               m_swapChainExtent{ extent },
               m_swapChainImageFormat{ format },
               m_swapChainPresentMode{ presentMode }
         {
-            createSwapChain(device, physicalDevice, surface);
+            createSwapChain(device, physicalDevice, surface, oldSwapChain);
             createImageViews(device);
             createFramebuffers(device, graphicsPipeline);
         }
 
-        void SwapChain::createSwapChain(Device& device, PhysicalDevice& physicalDevice, Surface& surface)
+        void SwapChain::createSwapChain(Device& device, PhysicalDevice& physicalDevice, Surface& surface, VkSwapchainKHR oldSwapChain)
         {
             I_DEBUG_LOG_INFO("Creating swap chain... | RunEngine");
 
@@ -60,6 +60,7 @@ namespace Run {
             // If another window is in front of our window then dont render the blocked section
             createInfo.clipped = VK_TRUE;
             createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+            createInfo.oldSwapchain = oldSwapChain;
 
             VK_CHECK(vkCreateSwapchainKHR(device, &createInfo, nullptr, &m_swapChain));
 
@@ -136,7 +137,7 @@ namespace Run {
 
         VkFormat SwapChain::getSwapChainImageFormat() { return m_swapChainImageFormat.format; }
 
-        void SwapChain::destroy()
+        void SwapChain::destroy(int flags)
         {
             I_DEBUG_LOG_INFO("Destroying swap chain framebuffers... | RunEngine");
             for (const auto& framebuffer : m_swapChainFrameBuffers) {
@@ -148,6 +149,8 @@ namespace Run {
                 vkDestroyImageView(*m_device, imageView, nullptr);
             }
 
+            if (flags & SWAPCHAIN_DONT_DESTROY_VK_SWAPCHAIN)
+                return;
 
             I_DEBUG_LOG_INFO("Destroying swap chain... | RunEngine");
             vkDestroySwapchainKHR(*m_device, m_swapChain, nullptr);

@@ -20,12 +20,17 @@ namespace Run {
             VkPipelineLayout& getVkPipelineLayout();
             VkPipeline& getVkPipeline();
 
+            std::string getVertexShaderFilePath();
+            std::string getFragmentShaderFilePath();
+
             void destroy();
         private:
             void createRenderPass();
             void createShaders(const std::string& vertPath, const std::string& fragPath);
             void createPipeline();
             void createPipelineLayout();
+
+            std::string m_vertFileName, m_fragFileName;
 
             Shader m_shader{};
             VkPipelineLayout m_pipelineLayout;

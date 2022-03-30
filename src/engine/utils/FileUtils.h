@@ -3,8 +3,20 @@
 #include <vector>
 #include <fstream>
 #include <ILog.h>
+#include "StbImage.h"
 
 namespace Run {
+    struct Image {
+        unsigned char* data;
+        int width, height, ch;
+
+        void destroy() {
+            stbi_image_free(data);
+        }
+    };
+
+    typedef Image Cursor;
+
     namespace FileUtils {
         // linker complaines saying Run::FileUtils::read is already defined :(
         // thats why its wrapped in an extra namespace
@@ -34,6 +46,26 @@ namespace Run {
                 fs.close();
 
                 return buffer;
+            }
+
+
+
+            Image loadImage(const char* fileName) {
+                Image img{};
+
+                img.data = stbi_load("assets/textures/cursor.png", &img.width, &img.height, &img.ch, NULL);
+
+                I_ASSERT_ERROR(!img.data, "Image %s failed to load!", fileName);
+
+                return img;
+            }
+
+            Cursor loadCursor(const char* fileName) {
+                Cursor cursor = loadImage(fileName);
+
+                I_ASSERT_ERROR(cursor.ch != 4, "Cursor image %s does not have 4 colour channels. Please use .png images with transparency on!", fileName);
+
+                return cursor;
             }
         }
     }

@@ -21,7 +21,7 @@ namespace Run {
                 VkExtent2D extent = m_context.chooseSwapChainExtent(swapChainDetails.capabilities);
                 VkSurfaceFormatKHR format = m_context.chooseBestSwapChainFormat(swapChainDetails.formats);
 
-                m_swapChain = SwapChain{ m_context.device, m_context.physicalDevice, graphicsPipeline, m_context.surface, m_window.getGLFWwindow(), format, presentMode, extent};
+                m_swapChain = SwapChain{ m_context.device, m_context.physicalDevice, graphicsPipeline, m_context.surface, m_window.getGLFWwindow(), format, presentMode, extent, nullptr };
             }
         }
 
@@ -41,11 +41,10 @@ namespace Run {
                 VK_TRUE,
                 std::numeric_limits<uint64_t>::max()
             ));
-            VK_CHECK(vkResetFences(m_context.device, 1, &m_sync.inFlightFences[m_currentFrame]));
 
             uint32_t imageIndex = 0;
 
-            VK_CHECK(vkAcquireNextImageKHR
+            VkResult acquireResult = vkAcquireNextImageKHR
             (
                 m_context.device,
                 m_swapChain,
@@ -53,7 +52,18 @@ namespace Run {
                 m_sync.imageAvailableSemaphores[m_currentFrame],
                 nullptr,
                 &imageIndex
-            ));
+            );
+
+            if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
+                recreate();
+                return;
+            }
+            else if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
+                I_LOG_FATAL_ERROR("Failed to acquire next swap chain image!");
+            }
+
+            // Only reset if submitting work
+            VK_CHECK(vkResetFences(m_context.device, 1, &m_sync.inFlightFences[m_currentFrame]));
 
 
             recordCommandBuffer(imageIndex);
@@ -86,7 +96,15 @@ namespace Run {
             presentInfo.pSwapchains = &m_swapChain.getVkSwapChain();
             presentInfo.pImageIndices = &imageIndex;
 
-            VK_CHECK(vkQueuePresentKHR(m_context.device.getQueues().present, &presentInfo));
+            VkResult presentResult = vkQueuePresentKHR(m_context.device.getQueues().present, &presentInfo);
+
+            if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR || m_window.isFramebufferResized()) {
+                m_window.setFramebufferResizedFalse();
+                recreate();
+            }
+            else if (presentResult != VK_SUCCESS) {
+                I_LOG_FATAL_ERROR("Failed to present swap chain image!");
+            }
 
             m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         }
@@ -205,6 +223,31 @@ namespace Run {
 
                 VK_CHECK(vkEndCommandBuffer(m_commandBuffers[m_currentFrame]));
             }
+        }
+
+        void Renderer::recreate()
+        {
+            int width = 0, height = 0;
+            glfwGetFramebufferSize(m_window.getGLFWwindow(), &width, &height);
+            while (width == 0 || height == 0) {
+                glfwWaitEvents();
+                glfwGetFramebufferSize(m_window.getGLFWwindow(), &width, &height);
+            }
+
+            vkDeviceWaitIdle(m_context.device);
+
+            m_swapChain.destroy(SWAPCHAIN_DONT_DESTROY_VK_SWAPCHAIN);
+
+            {
+                SwapChainDetails swapChainDetails = m_context.physicalDevice.getSwapChainDetails();
+
+                VkPresentModeKHR presentMode = m_context.chooseBestSwapChainPresentMode(swapChainDetails.presentModes);
+                VkExtent2D extent = m_context.chooseSwapChainExtent(swapChainDetails.capabilities);
+                VkSurfaceFormatKHR format = m_context.chooseBestSwapChainFormat(swapChainDetails.formats);
+
+                m_swapChain = { m_context.device, m_context.physicalDevice, m_graphicsPipeline, m_context.surface, m_window.getGLFWwindow(), format, presentMode, extent, m_swapChain };
+            }
+
         }
 	}
 }
