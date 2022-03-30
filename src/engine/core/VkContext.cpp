@@ -17,7 +17,7 @@ namespace Run {
         void Context::init(Window& window) {
             m_window = window.getGLFWwindow();
 
-            instance = Instance{ VK_VERSION_1_1 };
+            instance = Instance{ VK_VERSION_1_2 };
 
             #if !defined(NDEBUG)
                 debugMessenger = std::make_unique<DebugMessenger>(instance);

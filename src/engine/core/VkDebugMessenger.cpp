@@ -5,10 +5,6 @@ static bool justStarted = true;
 namespace Run {
     namespace Vk {
         VkBool32 VKAPI_PTR DebugMessenger::debugMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT  messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
-
-            if (strcmp(pCallbackData->pMessage, "Failed to open dynamic library \"C:\ProgramData\obs - studio - hook\.\graphics - hook32.dll\" with error 193") != NULL)
-                return VK_FALSE;
-
             I_DEBUG_LOG_WARNING(pCallbackData->pMessage);
             if (justStarted) {
                 I_FILE_LOG("VkRun.log", pCallbackData->pMessage, "w");

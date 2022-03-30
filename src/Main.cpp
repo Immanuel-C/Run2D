@@ -17,11 +17,6 @@ int main(int argc, char** argv) {
 
     cursor.destroy();
 
-    for (uint32_t i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-f") == NULL) {
-            window.setFullscreen(true);
-        }
-    }
 
     Run::Vk::Context& context = Run::Vk::Context::get();
     context.init(window);

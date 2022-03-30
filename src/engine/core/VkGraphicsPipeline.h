@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "VkContext.h"
 #include "VkStructs.h"
+#include "VkVertexBuffer.h"
 
 namespace Run {
     namespace Vk {

@@ -147,8 +147,15 @@ namespace Run {
                 fragShaderStageInfo
             };
 
+            auto bindingDesc = Vertex::getBindingDescription();
+            auto attributeDesc = Vertex::getAttributeDescriptions();
+
             VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
             vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+            vertexInputInfo.vertexBindingDescriptionCount = 1;
+            vertexInputInfo.pVertexBindingDescriptions = &bindingDesc;
+            vertexInputInfo.vertexAttributeDescriptionCount = attributeDesc.size();
+            vertexInputInfo.pVertexAttributeDescriptions = attributeDesc.data();
 
             VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
             inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -178,7 +185,7 @@ namespace Run {
             rasterizerInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
             rasterizerInfo.depthClampEnable = VK_FALSE;
             rasterizerInfo.rasterizerDiscardEnable = VK_FALSE;
-            rasterizerInfo.polygonMode = VK_POLYGON_MODE_FILL;
+            rasterizerInfo.polygonMode = VK_POLYGON_MODE_LINE;
             rasterizerInfo.lineWidth = 1.0f;
             rasterizerInfo.cullMode = VK_CULL_MODE_BACK_BIT;
             rasterizerInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
@@ -211,7 +218,6 @@ namespace Run {
                     VK_DYNAMIC_STATE_VIEWPORT,
                     VK_DYNAMIC_STATE_SCISSOR
             };
-
 
             VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
             dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
