@@ -41,6 +41,5 @@ namespace Run {
 			};
 		};
 
-		typedef Vector4 Colour;
 	}
 }

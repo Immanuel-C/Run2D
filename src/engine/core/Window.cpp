@@ -57,9 +57,9 @@ namespace Run {
 
     bool Window::shouldClose() { return glfwWindowShouldClose(m_window); }
 
-    void Window::setColour(Math::Colour colour) { m_colour = colour; }
+    void Window::setColour(Colour colour) { m_colour = colour; }
 
-    Math::Vector4 Window::getColour() { return m_colour; }
+    Colour Window::getColour() { return m_colour; }
 
     GLFWwindow*& Window::getGLFWwindow() { return m_window; }
 

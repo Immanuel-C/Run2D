@@ -7,6 +7,7 @@
 #include <array>
 
 #include "Vector.h"
+#include "Colour.h"
 
 namespace Run {
 	class Window
@@ -34,8 +35,8 @@ namespace Run {
 		void setMousePos(Math::Vector2 pos);
 		
 
-		void setColour(Math::Colour colour);
-		Math::Vector4 getColour();
+		void setColour(Colour colour);
+		Colour getColour();
 
 		GLFWwindow*& getGLFWwindow();
 
