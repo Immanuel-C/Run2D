@@ -17,12 +17,12 @@ namespace Run {
 	{
 	public:
 		static Window& get();
-		void setSize(int width, int height);
-		void setWidth(int width);
-		void setHeight(int height);
-		void setPosition(int x, int y);
-		void setTitle(std::string& title);
-		void setTitle(std::string&& title);
+		Window& setSize(int width, int height);
+		Window& setWidth(int width);
+		Window& setHeight(int height);
+		Window& setPosition(int x, int y);
+		Window& setTitle(std::string& title);
+		Window& setTitle(std::string&& title);
 
 		void center();
 
@@ -39,23 +39,30 @@ namespace Run {
 		bool isKeyJustUp(uint32_t key);
 
 		Math::Vector2 getMousePosition();
-		void setMousePosition(int x, int y);
+		Window& setMousePosition(int x, int y);
 		
-		void setCursor(int cursor);
-		void setCursor(Cursor cursor, int hotX = 0, int hotY = 0);
+		Window& setCursor(int cursor);
+		Window& setCursor(Cursor cursor, int hotX = 0, int hotY = 0);
 		void defaultCursor();
 
-		void setColour(Colour colour);
+		Window& setColour(Colour colour);
 		Colour getColour();
 
-		void setFullscreen(bool fullscreen);
+		Window& setFullscreen(bool fullscreen);
 
 		Math::Vector2 getSize();
 		Math::Vector2 getPosition();
 
 		// Dont use
 		bool isFramebufferResized();
+		// Dont use
 		void setFramebufferResizedFalse();
+
+		float getOpacity();
+		Window& setOpacity(float amount);
+
+		bool isVisible();
+		Window& setVisibility(bool visible);
 
 		GLFWwindow*& getGLFWwindow();
 
@@ -67,6 +74,9 @@ namespace Run {
 		static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 		static void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
 		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+		static void windowFocusCallback(GLFWwindow* window, int focused);
+
+
 
 		static Window* m_instance;
 
@@ -79,8 +89,12 @@ namespace Run {
 
 		bool m_fullscreen = false;
 		bool m_framebufferResized = false;
+		bool m_focused = false;
+		bool m_visible;
 
 		Math::Vector4 m_colour{0.0f, 0.0f, 0.0f, 0.0f};
+
+		float m_opacity = 1.0f;
 
 		struct {
 			std::array<bool, MAX_KEYS> keys;

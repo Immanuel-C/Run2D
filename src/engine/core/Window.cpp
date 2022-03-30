@@ -11,40 +11,52 @@ namespace Run {
         return *m_instance;
     }
 
-    void Window::setSize(int width, int height)
+    Window& Window::setSize(int width, int height)
     {
         m_size.x = width;
         m_size.y = height;
         glfwSetWindowSize(m_window, m_size.x, m_size.y);
+
+        return *this;
     }
 
-    void Window::setWidth(int width)
+    Window& Window::setWidth(int width)
     {
         setSize(width, m_size.y);
+
+        return *this;
     }
 
-    void Window::setHeight(int height)
+    Window& Window::setHeight(int height)
     {
         setSize(m_size.x, height);
+
+        return *this;
     }
 
-    void Window::setPosition(int x, int y)
+    Window& Window::setPosition(int x, int y)
     {
         m_position.x = x;
         m_position.y = y;
         glfwSetWindowPos(m_window, m_position.x, m_position.y);
+
+        return *this;
     }
 
-    void Window::setTitle(std::string& title)
+    Window& Window::setTitle(std::string& title)
     {
         m_title = title;
         glfwSetWindowTitle(m_window, m_title.c_str());
+
+        return *this;
     }
 
-    void Window::setTitle(std::string&& title)
+    Window& Window::setTitle(std::string&& title)
     {
         m_title = std::move(title);
         glfwSetWindowTitle(m_window, m_title.c_str());
+
+        return *this;
     }
 
     void Window::center()
@@ -112,21 +124,25 @@ namespace Run {
         return m_input.mousePos;
     }
 
-    void Window::setMousePosition(int x, int y)
+    Window& Window::setMousePosition(int x, int y)
     {
         m_input.mousePos.x = x;
         m_input.mousePos.y = y;
 
         glfwSetCursorPos(m_window, m_input.mousePos.x, m_input.mousePos.y);
+
+        return *this;
     }
 
-    void Window::setCursor(int cursor)
+    Window& Window::setCursor(int cursor)
     {
         m_cursor = glfwCreateStandardCursor(cursor);
         glfwSetCursor(m_window, m_cursor);
+
+        return *this;
     }
 
-    void Window::setCursor(Cursor cursor, int hotX, int hotY)
+    Window& Window::setCursor(Cursor cursor, int hotX, int hotY)
     {
         GLFWimage image{};
         image.width = cursor.width;
@@ -135,6 +151,8 @@ namespace Run {
 
         m_cursor = glfwCreateCursor(&image, hotX, hotY);
         glfwSetCursor(m_window, m_cursor);
+
+        return *this;
     }
 
     void Window::defaultCursor()
@@ -146,14 +164,18 @@ namespace Run {
         }
     }
 
-    void Window::setColour(Colour colour) { m_colour = colour; }
+    Window& Window::setColour(Colour colour) { 
+        m_colour = colour; 
+
+        return *this;
+    }
 
     Colour Window::getColour() { return m_colour; }
 
-    void Window::setFullscreen(bool fullscreen)
+    Window& Window::setFullscreen(bool fullscreen)
     {
         if (m_fullscreen == fullscreen)
-            return;
+            return *this;
 
         m_fullscreen = fullscreen;
 
@@ -171,6 +193,8 @@ namespace Run {
 
         if (!m_fullscreen)
             center();
+
+        return *this;
     }
 
     Math::Vector2 Window::getSize()
@@ -186,6 +210,34 @@ namespace Run {
     bool Window::isFramebufferResized() { return m_framebufferResized; }
 
     void Window::setFramebufferResizedFalse() { m_framebufferResized = false; }
+
+    float Window::getOpacity()
+    {
+        m_opacity = glfwGetWindowOpacity(m_window);
+        return m_opacity;
+    }
+
+    Window& Window::setOpacity(float amount)
+    {
+        m_opacity = amount;
+        glfwSetWindowOpacity(m_window, m_opacity);
+
+        return *this;
+    }
+
+    bool Window::isVisible()
+    {
+        return m_visible;
+    }
+
+    Window& Window::setVisibility(bool visible)
+    {
+        m_visible = visible;
+        m_visible ? glfwShowWindow(m_window) : glfwHideWindow(m_window);
+
+        return *this;
+    }
+
 
     GLFWwindow*& Window::getGLFWwindow() { return m_window; }
 
@@ -204,6 +256,7 @@ namespace Run {
 
         I_ASSERT_FATAL_ERROR(!m_window, "Could not create a GLFW window!");
 
+
         for (uint32_t i = 0; i < MAX_KEYS; i++) {
             m_input.keys[i] = false;
             m_input.keysJustPressed[i] = false;
@@ -214,6 +267,7 @@ namespace Run {
         glfwSetKeyCallback(m_window, keyCallback);
         glfwSetCursorPosCallback(m_window, cursorPositionCallback);
         glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
+        glfwSetWindowFocusCallback(m_window, windowFocusCallback);
     }
 
     void Window::windowMovedCallback(GLFWwindow* window, int xpos, int ypos)
@@ -226,10 +280,14 @@ namespace Run {
 
     void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
+
         if (key > MAX_KEYS)
             return;
 
         Window* win = (Window*)(glfwGetWindowUserPointer(window));
+
+        if (!win->m_focused)
+            return;
 
         win->m_input.keys[key] = action != GLFW_RELEASE;
         win->m_input.keysJustPressed[key] = action == GLFW_PRESS;
@@ -238,6 +296,9 @@ namespace Run {
     void Window::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
     {
         Window* win = (Window*)(glfwGetWindowUserPointer(window));
+
+        if (!win->m_focused)
+            return;
 
         win->m_input.mousePos = { (float)xpos, (float)ypos };
     }
@@ -248,4 +309,11 @@ namespace Run {
         win->m_framebufferResized = true;
         win->m_size = { (float)width, (float)height };
     }
+
+    void Window::windowFocusCallback(GLFWwindow* window, int focused)
+    {
+        Window* win = (Window*)(glfwGetWindowUserPointer(window));
+        win->m_focused = focused ? true : false;
+    }
+
 }

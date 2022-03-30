@@ -6,14 +6,14 @@
 
 int main(int argc, char** argv) {
     Run::Window& window = Run::Window::get();
-    window.setSize(1280, 720);
-    window.setTitle("Run Game Engine");
-    Run::Colour windowColour{ 1.0f, 0.5f, 0.25f, 1.0f };
-    window.setColour(windowColour);
 
+    Run::Colour windowColour{ 1.0f, 0.5f, 0.25f, 1.0f };
     Run::Cursor cursor = Run::FileUtils::loadCursor("assets/textures/cursor.png");
 
-    window.setCursor(cursor, 0, cursor.height / 2);
+    window.setSize(1280, 720)
+        .setTitle("Run Game Engine")
+        .setColour(windowColour)
+        .setCursor(cursor, 0, cursor.height / 2);
 
     cursor.destroy();
 
@@ -41,9 +41,9 @@ int main(int argc, char** argv) {
 
         if (window.isKeyDown(GLFW_KEY_F)) {
             isFullscreen = !isFullscreen;
+            window.setFullscreen(isFullscreen);
         }
 
-        window.setFullscreen(isFullscreen);
 
         window.getInputEvents();
     }
