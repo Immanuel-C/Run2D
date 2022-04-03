@@ -5,21 +5,25 @@
 #include "Window.h"
 #include "Ref.h"
 
+#include "VkVertexBuffer.h"
+#include "VkIndexBuffer.h"
+
 namespace Run {
 	namespace Vk {
+
 		class Renderer
 		{
 		public:
 			Renderer(GraphicsPipeline& graphicsPipeline);
 
-			void draw(VertexBuffer& buffer);
+			void draw(VertexBuffer* vertexBuffers, size_t vertexBufferSize, IndexBuffer* indexBuffer, size_t indexBufferSize);
 
 			void destroy();
 		private:
 			void createSync();
 			void createCommandPool();
 			void allocateCommandBuffer();
-			void recordCommandBuffer(uint32_t imageIndex, VertexBuffer& buffer);
+			void recordCommandBuffer(uint32_t imageIndex, VertexBuffer* vertexBuffers, size_t vertexBufferSize, IndexBuffer* indexBuffer, size_t indexBufferSize);
 
 			void recreate();
 

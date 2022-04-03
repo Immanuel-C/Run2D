@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <ILog.h>
 
+#include "VkBufferUtils.h"
 #include "Vector.h"
 #include "debug.h"
 #include "VkContext.h"
@@ -25,16 +26,23 @@ namespace Run {
 		{
 		public:
 			VertexBuffer(Vertex* vertices, size_t verticesSize);
+			VertexBuffer() {}
 
 			VkBuffer& getVkBuffer();
 
+			size_t getVerticesSize();
+
 			void destroy();
 		private:
-			uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+			size_t m_verticesSize = 0;
+
+			static VkCommandPool m_commandPool;
+			static int64_t m_bufferCount;
 
 			Context& m_context = Context::get();
-			VkBuffer m_buffer;
-			VkDeviceMemory m_bufferMemory;
+			VkBuffer m_buffer = nullptr;
+			VkDeviceMemory m_bufferMemory = nullptr;
 		};
 	}
 }

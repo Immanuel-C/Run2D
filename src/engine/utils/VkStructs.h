@@ -9,15 +9,17 @@ namespace Run {
         struct QueueFamilyIndices {
             int graphicsFamilyIdx = -1;
             int presentFamilyIdx = -1;
+            int transferFamilyIdx = -1;
 
             bool isValid() {
-                return graphicsFamilyIdx > -1 && presentFamilyIdx > -1;
+                return graphicsFamilyIdx > -1 && presentFamilyIdx > -1 && transferFamilyIdx > -1;
             }
         };
 
         struct Queues {
             VkQueue graphics;
             VkQueue present;
+            VkQueue transfer;
         };
 
         struct SwapChainDetails {
@@ -32,6 +34,7 @@ namespace Run {
         };
 
 
+        // Not in use 
         enum struct ShaderLanguage {
             GLSL,
             HLSL,

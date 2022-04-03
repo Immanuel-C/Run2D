@@ -7,11 +7,15 @@ namespace Run {
             std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
             // If the graphics family idx and the present family idx are the same one of the values will get
             // discarded from the set
-            std::set<int> uniqueQueueFamiliesIdxs = {physicalDevice.getQueueFamilyIndices().graphicsFamilyIdx, physicalDevice.getQueueFamilyIndices().presentFamilyIdx};
+            std::set<int> uniqueQueueFamiliesIdxs = {
+                physicalDevice.getQueueFamilyIndices().graphicsFamilyIdx, 
+                physicalDevice.getQueueFamilyIndices().presentFamilyIdx, 
+                physicalDevice.getQueueFamilyIndices().transferFamilyIdx
+            };
 
             float queuePriority = 1.0f;
             
-            for (const int32_t& queueFamilyIdx : uniqueQueueFamiliesIdxs) {
+            for (const int& queueFamilyIdx : uniqueQueueFamiliesIdxs) {
                 VkDeviceQueueCreateInfo queueCreateInfo{};
                 queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
                 queueCreateInfo.queueFamilyIndex = queueFamilyIdx;
@@ -34,7 +38,6 @@ namespace Run {
                 VK_KHR_SWAPCHAIN_EXTENSION_NAME
             };
 
-
             createInfo.enabledExtensionCount = deviceExtensions.size();
             createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
@@ -42,6 +45,7 @@ namespace Run {
 
             vkGetDeviceQueue(m_device, physicalDevice.getQueueFamilyIndices().graphicsFamilyIdx, 0, &m_queues.graphics);
             vkGetDeviceQueue(m_device, physicalDevice.getQueueFamilyIndices().presentFamilyIdx, 0, &m_queues.present);
+            vkGetDeviceQueue(m_device, physicalDevice.getQueueFamilyIndices().transferFamilyIdx, 0, &m_queues.transfer);
         }
 
 
@@ -50,7 +54,6 @@ namespace Run {
 
         void Device::destroy()
         {
-
             I_DEBUG_LOG_INFO("Destroying device... | RunEngine");
             vkDestroyDevice(m_device, nullptr);
         }

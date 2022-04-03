@@ -74,8 +74,13 @@ namespace Run {
                     m_queueIndices.graphicsFamilyIdx = i;
                 }
 
+                if (queueFamilies[i].queueFlags & VK_QUEUE_TRANSFER_BIT) {
+                    m_queueIndices.transferFamilyIdx = i;
+                }
+
                 VkBool32 presentSupport = false;
                 vkGetPhysicalDeviceSurfaceSupportKHR(device, i, *m_surface, &presentSupport);
+
 
                 if (presentSupport)
                     m_queueIndices.presentFamilyIdx = i;

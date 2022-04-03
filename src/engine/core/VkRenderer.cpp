@@ -30,7 +30,7 @@ namespace Run {
             #undef max
         #endif
 
-        void Renderer::draw(VertexBuffer& buffer)
+        void Renderer::draw(VertexBuffer* vertexBuffers, size_t vertexBufferSize, IndexBuffer* indexBuffer, size_t indexBufferSize)
         {
 
             VK_CHECK(vkWaitForFences
@@ -66,7 +66,7 @@ namespace Run {
             VK_CHECK(vkResetFences(m_context.device, 1, &m_sync.inFlightFences[m_currentFrame]));
 
 
-            recordCommandBuffer(imageIndex, buffer);
+            recordCommandBuffer(imageIndex, vertexBuffers, vertexBufferSize, indexBuffer, indexBufferSize);
 
             VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
@@ -173,7 +173,7 @@ namespace Run {
             VK_CHECK(vkAllocateCommandBuffers(m_context.device, &allocInfo, m_commandBuffers.data()));
         }
 
-        void Renderer::recordCommandBuffer(uint32_t imageIndex, VertexBuffer& buffer)
+        void Renderer::recordCommandBuffer(uint32_t imageIndex, VertexBuffer* vertexBuffers, size_t vertexBufferSize, IndexBuffer* indexBuffer, size_t indexBufferSize)
         {
             VkCommandBufferBeginInfo beginInfo{};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -215,10 +215,15 @@ namespace Run {
                     vkCmdBeginRenderPass(m_commandBuffers[m_currentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
                     {
                         vkCmdBindPipeline(m_commandBuffers[m_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline.getVkPipeline());
-                        VkDeviceSize offsets[] = { 0 };
-                        vkCmdBindVertexBuffers(m_commandBuffers[m_currentFrame], 0, 1, &buffer.getVkBuffer(), offsets);
 
-                        vkCmdDraw(m_commandBuffers[m_currentFrame], 3, 1, 0, 0);
+                        VkDeviceSize offsets[] = { 0 };
+
+                        for (uint32_t i = 0; i < indexBufferSize; i++) {
+                            vkCmdBindVertexBuffers(m_commandBuffers[m_currentFrame], 0, 1, &vertexBuffers[i].getVkBuffer(), offsets);
+                            vkCmdBindIndexBuffer(m_commandBuffers[m_currentFrame], indexBuffer[i].getVkBuffer(), 0, VK_INDEX_TYPE_UINT32);
+                            vkCmdDrawIndexed(m_commandBuffers[m_currentFrame], indexBuffer[i].getIndicesSize(), 1, 0, 0, 0);
+                        }
+
                     }
                     vkCmdEndRenderPass(m_commandBuffers[m_currentFrame]);
                 }

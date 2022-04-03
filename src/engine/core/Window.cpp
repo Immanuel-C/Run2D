@@ -191,7 +191,7 @@ namespace Run {
             GLFW_DONT_CARE
         );
 
-        if (!m_fullscreen)
+        if (!m_fullscreen) 
             center();
 
         return *this;
@@ -286,9 +286,6 @@ namespace Run {
 
         Window* win = (Window*)(glfwGetWindowUserPointer(window));
 
-        if (!win->m_focused)
-            return;
-
         win->m_input.keys[key] = action != GLFW_RELEASE;
         win->m_input.keysJustPressed[key] = action == GLFW_PRESS;
     }
@@ -297,8 +294,6 @@ namespace Run {
     {
         Window* win = (Window*)(glfwGetWindowUserPointer(window));
 
-        if (!win->m_focused)
-            return;
 
         win->m_input.mousePos = { (float)xpos, (float)ypos };
     }

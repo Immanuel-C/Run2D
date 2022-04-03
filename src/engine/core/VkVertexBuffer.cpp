@@ -21,6 +21,7 @@ namespace Run {
 
 			return attributeDescs;
 		}
+
 		VkVertexInputBindingDescription Vertex::getBindingDescription()
 		{
 			VkVertexInputBindingDescription bindingDesc{};
@@ -33,70 +34,72 @@ namespace Run {
 			return bindingDesc;
 		}
 
-		VertexBuffer::VertexBuffer(Vertex* vertices, size_t verticesSize)
+		VkCommandPool VertexBuffer::m_commandPool = nullptr;
+		int64_t VertexBuffer::m_bufferCount = 0;
+
+		VertexBuffer::VertexBuffer(Vertex* vertices, size_t verticesSize) : m_verticesSize { verticesSize }
 		{
-			VkBufferCreateInfo bufferInfo{};
-			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			// Size in bytes
-			bufferInfo.size = sizeof(Vertex) * verticesSize;
-			bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			m_bufferCount++;
 
 			I_DEBUG_LOG_INFO("Creating vertex buffer... | Run Engine");
+			VkDeviceSize bufferSize = sizeof(Vertex) * verticesSize;
 
-			VK_CHECK(vkCreateBuffer(m_context.device, &bufferInfo, nullptr, &m_buffer));
+			if (!m_commandPool) {
+				VkCommandPoolCreateInfo poolInfo{};
+				poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+				poolInfo.queueFamilyIndex = m_context.queueIndices.transferFamilyIdx;
 
-			VkMemoryRequirements memRequirements{};
-			vkGetBufferMemoryRequirements(m_context.device, m_buffer, &memRequirements);
+				VK_CHECK(vkCreateCommandPool(m_context.device, &poolInfo, nullptr, &m_commandPool));
+			}
 
+			VkBuffer stagingBuffer;
+			VkDeviceMemory stagingBufferMemory;
+			createBuffer(m_context, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+				VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-			VkMemoryAllocateInfo allocInfo{};
-			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-			VK_CHECK(vkAllocateMemory(m_context.device, &allocInfo, nullptr, &m_bufferMemory));
-
-			// Associate this memory with the buffer
-			vkBindBufferMemory(m_context.device, m_buffer, m_bufferMemory, 0);
-
+			
 			void* data;
 			// make the data buffer a cpu visible buffer to the physical device memory
-			vkMapMemory(m_context.device, m_bufferMemory, 0, bufferInfo.size, 0, &data);
-			memcpy(data, vertices, bufferInfo.size);
+			VK_CHECK(vkMapMemory(m_context.device, stagingBufferMemory, 0, bufferSize, 0, &data));
+			memcpy(data, vertices, bufferSize);
 			// the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT makes sure to copy the data to the physical device buffer
 			// the data buffer with un-associate with the physical device buffer
-			vkUnmapMemory(m_context.device, m_bufferMemory);
+			vkUnmapMemory(m_context.device, stagingBufferMemory);
+
+			createBuffer(m_context, bufferSize,
+				VK_BUFFER_USAGE_TRANSFER_DST_BIT | 
+				VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_buffer, m_bufferMemory);
+
+
+			bufcpy(m_context, m_commandPool, m_buffer, stagingBuffer, bufferSize);
+
+
+			vkDestroyBuffer(m_context.device, stagingBuffer, nullptr);
+			vkFreeMemory(m_context.device, stagingBufferMemory, nullptr);
 		}
 
 		VkBuffer& VertexBuffer::getVkBuffer() { return m_buffer; }
 
+		size_t VertexBuffer::getVerticesSize()
+		{
+			return m_verticesSize;
+		}
+
 		void VertexBuffer::destroy()
 		{
+			vkQueueWaitIdle(m_context.device.getQueues().transfer);
+
 			I_DEBUG_LOG_INFO("Destroying vertex buffer... | Run Engine");
 			vkDestroyBuffer(m_context.device, m_buffer, nullptr);
 			vkFreeMemory(m_context.device, m_bufferMemory, nullptr);
-		}
 
-		uint32_t VertexBuffer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
-		{
-			// Get the memory properties (which contains the memory types)
-			VkPhysicalDeviceMemoryProperties memProperties;
-			vkGetPhysicalDeviceMemoryProperties(m_context.physicalDevice, &memProperties);
+			m_bufferCount--;
 
-			for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-				// 1. Gets the index of the memory type. idk what (1 << i) does though
-				// 2. Check for the properties flags. the properties flags are useful for checking if a 
-				// memory type is visible to host, etc.
-				if (typeFilter & (1 << i) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-					return i;
-				}
+			if (m_bufferCount == 0) {
+				vkDestroyCommandPool(m_context.device, m_commandPool, nullptr);
 			}
-
-			I_ASSERT_ERROR(true, "Failed to find a memory type for vertex buffer!");
-
-			return 0;
 		}
 	}
 }
