@@ -16,15 +16,8 @@ namespace Run {
         float miliseconds;
         float seconds;
 
-        void start() {
-            startTime = HighResClock::now();
-        }
+        void start(); 
 
-        void end() {
-            endTime = HighResClock::now();
-            duration = endTime - startTime;
-            miliseconds = duration.count() * 1000.0f;
-            seconds = duration.count();
-        }
+        void end(); 
     };
 }
