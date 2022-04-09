@@ -12,5 +12,4 @@ The repository provides .lib files and .dll files for its libraries, not .a or .
 
 # Libraries
 
-The Run Engine uses [GLFW](https://www.glfw.org/) for windowing. Make sure to include glfw3.dll in your build folder.
-This engine also uses [ILog](https://github.com/Immanuel-C/ILog) ([ILog Docs](https://immanuel-c.github.io/ILog/frontPage.html)) for loging.
+The Run Engine uses [GLFW](https://www.glfw.org/) for windowing. Make sure to include glfw3.dll in your build folder, [ILog](https://github.com/Immanuel-C/ILog) ([ILog Docs](https://immanuel-c.github.io/ILog/frontPage.html)) for loging and GLM for math
