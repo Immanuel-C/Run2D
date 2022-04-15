@@ -128,6 +128,8 @@ namespace Run {
             m_swapChain.destroy();
         }
 
+
+
         void Renderer::createSync()
         {
             m_sync.imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -256,5 +258,15 @@ namespace Run {
             }
 
         }
-	}
+
+
+        void Renderer::operator=(Renderer& renderer)
+        {
+            m_commandPool = renderer.m_commandPool;
+            m_swapChain = renderer.m_swapChain;
+            m_commandBuffers = renderer.m_commandBuffers;
+            m_sync = renderer.m_sync;
+            m_graphicsPipeline = renderer.m_graphicsPipeline;
+        }
+    }
 }

@@ -6,16 +6,21 @@
 
 #include "VkStructs.h"
 #include "FileUtils.h"
-#include "debug.h"
+#include "debug.h" 
 #include "VkContext.h"
 #include "VkStructs.h"
 #include "VkVertexBuffer.h"
 
+#include "DynamicExport.h"
+
+
 namespace Run {
     namespace Vk {
-        class GraphicsPipeline {
+        class RUN_API GraphicsPipeline {
         public:
             GraphicsPipeline(const std::string& vertPath, const std::string& fragPath);
+
+            GraphicsPipeline();
 
             VkRenderPass& getVkRenderPass();
             VkPipelineLayout& getVkPipelineLayout();

@@ -8,10 +8,12 @@
 #include "debug.h"
 #include "VkInstance.h"
 #include "VkStructs.h"
+#include "DynamicExport.h"
+
 
 namespace Run {
     namespace Vk {
-        class Surface {
+        class RUN_API Surface {
         public:
             Surface(Instance& instance, GLFWwindow*& window);
             Surface() {}

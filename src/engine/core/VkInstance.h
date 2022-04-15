@@ -5,10 +5,11 @@
 #include <vector>
 #include <array>
 #include "debug.h"
+#include "DynamicExport.h"
 
 namespace Run {
     namespace Vk {
-        class Instance {
+        class RUN_API Instance {
         public:
             Instance(uint32_t vkVersion);
             Instance() {}

@@ -16,6 +16,7 @@ namespace Run {
     };
 
     typedef Image Cursor;
+    typedef Image Icon;
 
     namespace FileUtils {
         // linker complaines saying Run::FileUtils::read is already defined :(
@@ -48,24 +49,49 @@ namespace Run {
                 return buffer;
             }
 
+            std::string strRead(const std::string& fileName, int fileStreamFlags) {
+                std::vector<char> data = read(fileName, fileStreamFlags);
+
+                std::string out;
+                out.append(data.data());
+
+                return out;
+            }
 
 
-            Image loadImage(const char* fileName) {
+            const char* cstrRead(const std::string& fileName, int fileStreamFlags) {
+                std::vector<char> data = read(fileName, fileStreamFlags);
+
+                const char* out = data.data(); 
+
+                return out;
+            }
+
+
+            Image loadImage(const std::string& fileName) {
                 Image img{};
 
-                img.data = stbi_load("assets/textures/cursor.png", &img.width, &img.height, &img.ch, NULL);
+                img.data = stbi_load(fileName.c_str(), &img.width, &img.height, &img.ch, NULL);
 
-                I_ASSERT_ERROR(!img.data, "Image %s failed to load!", fileName);
+                I_ASSERT_ERROR(!img.data, "Image %s failed to load!", fileName.c_str());
 
                 return img;
             }
 
-            Cursor loadCursor(const char* fileName) {
+            Cursor loadCursor(const std::string& fileName) {
                 Cursor cursor = loadImage(fileName);
 
-                I_ASSERT_ERROR(cursor.ch != 4, "Cursor image %s does not have 4 colour channels. Please use .png images with transparency on!", fileName);
+                I_ASSERT_ERROR(cursor.ch != 4, "Cursor image %s does not have 4 colour channels. Use .png images with transparency on!", fileName.c_str());
 
                 return cursor;
+            }
+
+            Icon loadIcon(const std::string& fileName) {
+                Icon icon = loadImage(fileName);
+
+                I_ASSERT_ERROR(icon.ch != 4, "icon image %s does not have 4 colour channels. Use .png images with transparency on!", fileName.c_str());
+
+                return icon;
             }
         }
     }

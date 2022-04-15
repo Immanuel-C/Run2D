@@ -1,9 +1,13 @@
+#include "DynamicExport.h"
+
 #if !defined(ILOG_H)
 #define ILOG_H
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+#pragma warning(disable:4996) 
 
 // Github repo link https://github.com/Immanuel-C/ILog
 // This library is under the MIT licence 
@@ -227,15 +231,17 @@ extern "C" {
 
 
 // DO NOT USE
-extern void _platformLog(FILE* stream, const char* msg, int colour);
+RUN_API void _platformLog(FILE* stream, const char* msg, int colour);
 
 // DO NOT USE
-extern void _i_log(FILE* stream, const char* prefix, const char* msg, int colour, ...);
+RUN_API void _i_log(FILE* stream, const char* prefix, const char* msg, int colour, ...);
 // DO NOT USE
-extern void _f_i_log(const char* fileName, const char* msg, const char* mode, ...);
+RUN_API void _f_i_log(const char* fileName, const char* msg, const char* mode, ...);
+
+
 
 #if defined(__cplusplus)
 }
 #endif
 
-#endif
+#endif // ILOG_H

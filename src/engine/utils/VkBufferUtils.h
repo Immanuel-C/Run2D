@@ -23,7 +23,7 @@ namespace Run {
 					}
 				}
 
-				I_ASSERT_ERROR(true, "Failed to find a memory type for vertex buffer!");
+				I_ASSERT_ERROR(true, "Failed to find a memory type for a Vulkan buffer!");
 
 				return 0;
 			}

@@ -388,11 +388,13 @@ typedef unsigned short stbi_us;
 extern "C" {
 #endif
 
+#include "DynamicExport.h"
+
 #ifndef STBIDEF
 #ifdef STB_IMAGE_STATIC
-#define STBIDEF static
+#define STBIDEF static RUN_API
 #else
-#define STBIDEF extern
+#define STBIDEF extern RUN_API
 #endif
 #endif
 

@@ -8,6 +8,7 @@
 #include <set>
 #include <algorithm>
 #include <memory>
+#include <future>
 
 #include "debug.h"
 #include "VkStructs.h"
@@ -17,16 +18,19 @@
 #include "VkPhysicalDevice.h"
 #include "VkDevice.h"
 #include "Window.h"
+#include "Timer.h"
+#include "DynamicExport.h"
 
 namespace Run {
     namespace Vk {
-        class Context
+        class RUN_API Context
         {
         public:
             static Context& get();
 
+
             Instance instance;
-            std::unique_ptr<DebugMessenger> debugMessenger;
+            std::shared_ptr<DebugMessenger> debugMessenger;
             PhysicalDevice physicalDevice;
             Device device;
             Surface surface;
@@ -40,15 +44,15 @@ namespace Run {
             VkSurfaceFormatKHR chooseBestSwapChainFormat(std::vector<VkSurfaceFormatKHR>& formats);
 
             void destroy();
-            void init(Window& window);
 
         private:
             static Context* m_contextInstance;
 
             GLFWwindow* m_window = nullptr;
 
+            std::future<void> m_initFuture;
 
-            Context() { }
+            Context();
             ~Context() { }
         };
     }

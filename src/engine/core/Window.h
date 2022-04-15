@@ -9,11 +9,12 @@
 #include "Vector.h"
 #include "Colour.h"
 #include "FileUtils.h"
+#include "InputMapper.h"
+#include "DynamicExport.h"
 
 namespace Run {
-	constexpr uint32_t MAX_KEYS = 500;
 
-	class Window
+	class RUN_API Window
 	{
 	public:
 		static Window& get();
@@ -33,15 +34,28 @@ namespace Run {
 		bool shouldClose();
 		bool isFullscreen();
 
-		bool isKeyDown(uint32_t key);
-		bool isKeyUp(uint32_t key);
-		bool isKeyJustDown(uint32_t key);
-		bool isKeyJustUp(uint32_t key);
+		template <typename... Args>
+		bool isKeyDown(Keys key, Args ...args) { return isKeyDown(key) && isKeyDown(args...); }
+		template <typename... Args>
+		bool isKeyUp(Keys key, Args ...args) { return !isKeyUp(key) && !isKeyUp(args...); }
+		template <typename... Args>
+		bool isKeyJustDown(Keys key, Args ...args) { return isKeyJustDown(key) && isKeyJustDown(args...); }
+		template <typename... Args>
+		bool isKeyJustUp(Keys key, Args ...args) { return isKeyJustUp(key) && isKeyJustUp(args...); }
+
+		bool isKeyDown(Keys key);
+		bool isKeyUp(Keys key);
+		bool isKeyJustDown(Keys key);
+		bool isKeyJustUp(Keys key);
+
+		bool isMouseButtonDown(MouseButtons button);
+		bool isMouseButtonUp(MouseButtons button);
 
 		Math::Vector2 getMousePosition();
 		Window& setMousePosition(int x, int y);
 		
 		Window& setCursor(int cursor);
+		// Automatically deletes the cursor
 		Window& setCursor(Cursor cursor, int hotX = 0, int hotY = 0);
 		void defaultCursor();
 
@@ -50,8 +64,22 @@ namespace Run {
 
 		Window& setFullscreen(bool fullscreen);
 
+		// Automatically deletes the icon
+		Window& setIcon(Icon icon);
+
 		Math::Vector2 getSize();
 		Math::Vector2 getPosition();
+
+		bool isGamepadButtonPressed(GamepadID jid, GamepadButtons button);
+		float getGamepadAxis(GamepadID jid, GamepadAxis axis);
+
+		bool isGamepadConnected(GamepadID jid);
+
+		std::vector<const char*> getDroppedPaths();
+		bool pathsJustDropped();
+
+		std::string getClipboardString();
+		Window& setClipboardString(const std::string& cpbStr);
 
 		// Dont use
 		bool isFramebufferResized();
@@ -75,7 +103,9 @@ namespace Run {
 		static void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
 		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 		static void windowFocusCallback(GLFWwindow* window, int focused);
-
+		static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+		static void joystickCallback(int jid, int event);
+		static void windowDropCallback(GLFWwindow* window, int count, const char** paths);
 
 
 		static Window* m_instance;
@@ -90,15 +120,25 @@ namespace Run {
 		bool m_fullscreen = false;
 		bool m_framebufferResized = false;
 		bool m_focused = false;
-		bool m_visible;
+		bool m_visible = true;
 
-		Math::Vector4 m_colour{0.0f, 0.0f, 0.0f, 0.0f};
+		Colour m_colour{0.0f, 0.0f, 0.0f, 0.0f};
 
 		float m_opacity = 1.0f;
+
+
+		std::vector<const char*> m_dropPaths;
+		bool m_pathsJustDropped = false;
+
+		static constexpr uint32_t MAX_KEYS = 500;
+		static constexpr uint32_t MAX_MOUSE_BUTTONS = 10;
+		static constexpr uint32_t MAX_GAMEPADS = 16;
 
 		struct {
 			std::array<bool, MAX_KEYS> keys;
 			std::array<bool, MAX_KEYS> keysJustPressed;
+			std::array<bool, MAX_MOUSE_BUTTONS> mouseButtons;
+			std::array<bool, MAX_GAMEPADS> gamePadsConnected;
 			Math::Vector2 mousePos{0.0f, 0.0f};
 		} m_input;
 	};

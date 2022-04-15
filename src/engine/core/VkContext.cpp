@@ -13,15 +13,23 @@ namespace Run {
             return *m_contextInstance; 
         }
 
+        std::mutex initMutex;
 
-        void Context::init(Window& window) {
-            m_window = window.getGLFWwindow();
+        void initAsync(std::shared_ptr<DebugMessenger>& debugMessenger, Instance& instance) {
+            std::lock_guard<std::mutex> lock{ initMutex };
+            debugMessenger = std::make_shared<DebugMessenger>(instance);
+        }
+
+        Context::Context()
+        {
+
+            m_window = Run::Window::get().getGLFWwindow();
 
             instance = Instance{ VK_VERSION_1_2 };
 
-            #if !defined(NDEBUG)
-                debugMessenger = std::make_unique<DebugMessenger>(instance);
-            #endif
+#if !defined(NDEBUG) || defined(DEBUG)
+            m_initFuture = std::async(std::launch::async, initAsync, std::ref(debugMessenger), std::ref(instance));
+#endif
             surface = Surface{ instance, m_window };
             physicalDevice = PhysicalDevice{ instance, surface };
 

@@ -7,13 +7,14 @@
 #include "Vector.h"
 #include "debug.h"
 #include "VkContext.h"
+#include "DynamicExport.h"
 
 #include <array>
 
 
 namespace Run {
 	namespace Vk {
-		struct Vertex {
+		struct RUN_API Vertex {
 			Math::Vector2 position;
 			Math::Vector3 colour;
 
@@ -22,7 +23,7 @@ namespace Run {
 			static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
 		};
 
-		class VertexBuffer
+		class RUN_API VertexBuffer
 		{
 		public:
 			VertexBuffer(Vertex* vertices, size_t verticesSize);

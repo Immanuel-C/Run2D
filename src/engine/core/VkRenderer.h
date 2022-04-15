@@ -3,22 +3,28 @@
 #include "VkSwapChain.h"
 #include "VkGraphicsPipeline.h"
 #include "Window.h"
-#include "Ref.h"
 
 #include "VkVertexBuffer.h"
 #include "VkIndexBuffer.h"
+#include "DynamicExport.h"
+
 
 namespace Run {
 	namespace Vk {
 
-		class Renderer
+		class RUN_API Renderer
 		{
 		public:
 			Renderer(GraphicsPipeline& graphicsPipeline);
+			Renderer() : m_graphicsPipeline{ GraphicsPipeline{} } {};
 
 			void draw(VertexBuffer* vertexBuffers, size_t vertexBufferSize, IndexBuffer* indexBuffer, size_t indexBufferSize);
 
 			void destroy();
+
+			void operator=(Renderer& renderer);
+			//void operator=(Renderer&& renderer) noexcept;
+			
 		private:
 			void createSync();
 			void createCommandPool();

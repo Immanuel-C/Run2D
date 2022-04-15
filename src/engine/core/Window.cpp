@@ -93,30 +93,43 @@ namespace Run {
 
     bool Window::isFullscreen() { return m_fullscreen; }
 
-    bool Window::isKeyDown(uint32_t key)
+    bool Window::isKeyDown(Keys key)
     {
-        if (key > MAX_KEYS)
+        if ((int)key > MAX_KEYS)
             return false;
 
-        return m_input.keys[key];
+        return m_input.keys[(int)key];
     }
 
-    bool Window::isKeyUp(uint32_t key)
+    bool Window::isKeyUp(Keys key)
     {
         return !isKeyDown(key);
     }
 
-    bool Window::isKeyJustDown(uint32_t key)
+    bool Window::isKeyJustDown(Keys key)
     {
-        if (key > MAX_KEYS)
+        if ((int)key > MAX_KEYS)
             return false;
 
-        return m_input.keysJustPressed[key];
+        return m_input.keysJustPressed[(int)key];
     }
 
-    bool Window::isKeyJustUp(uint32_t key)
+    bool Window::isKeyJustUp(Keys key)
     {
         return !isKeyJustDown(key);
+    }
+
+    bool Window::isMouseButtonDown(MouseButtons button)
+    {
+        if ((int)button > MAX_MOUSE_BUTTONS)
+            return false;
+
+        return m_input.mouseButtons[(int)button];
+    }
+
+    bool Window::isMouseButtonUp(MouseButtons button)
+    {
+        return !isMouseButtonDown(button);
     }
 
     Math::Vector2 Window::getMousePosition()
@@ -151,6 +164,8 @@ namespace Run {
 
         m_cursor = glfwCreateCursor(&image, hotX, hotY);
         glfwSetCursor(m_window, m_cursor);
+
+        cursor.destroy();
 
         return *this;
     }
@@ -197,14 +212,87 @@ namespace Run {
         return *this;
     }
 
-    Math::Vector2 Window::getSize()
+    Window& Window::setIcon(Icon icon)
     {
-        return m_size;
+        GLFWimage image{};
+        image.width = icon.width;
+        image.height = icon.height;
+        image.pixels = icon.data;
+
+
+        glfwSetWindowIcon(m_window, 1, &image);
+
+        icon.destroy();
+
+        return *this;
     }
 
-    Math::Vector2 Window::getPosition()
+    Math::Vector2 Window::getSize() { return m_size; }
+
+    Math::Vector2 Window::getPosition() { return m_position; }
+
+    bool Window::isGamepadButtonPressed(GamepadID jid, GamepadButtons button)
     {
-        return m_position;
+         if (isGamepadConnected(jid)) {
+            GLFWgamepadstate state{};
+             if (glfwGetGamepadState((int)jid, &state))
+                return state.buttons[(int)button];
+         }
+
+        return false;
+    }
+
+    float Window::getGamepadAxis(GamepadID jid, GamepadAxis axis)
+    {
+        GLFWgamepadstate state{};
+
+        if (isGamepadConnected(jid)) {
+            GLFWgamepadstate state{};
+            if (glfwGetGamepadState((int)jid, &state))
+                return state.axes[(int)axis];
+        }
+
+
+        return 0.0f;
+    }
+
+    bool Window::isGamepadConnected(GamepadID jid) { 
+        if (glfwJoystickPresent((int)jid))
+            return glfwJoystickIsGamepad((int)jid);
+
+        return false;
+    }
+
+    std::vector<const char*> Window::getDroppedPaths() { 
+        auto temp = m_dropPaths;
+        m_dropPaths.erase(m_dropPaths.begin(), m_dropPaths.end());
+        return temp;
+    }
+
+    bool Window::pathsJustDropped()
+    {
+        if (m_pathsJustDropped) {
+            m_pathsJustDropped = false;
+            return true;
+        }
+        
+        return false;
+    }
+
+    std::string Window::getClipboardString()
+    {
+        const char* text = glfwGetClipboardString(nullptr);
+
+        // glfwGetClipboardString can return nullptr if it fails
+        if (text)
+            return text;
+
+        return "";
+    }
+
+    Window& Window::setClipboardString(const std::string& cpbStr) { 
+        glfwSetClipboardString(nullptr, cpbStr.c_str()); 
+        return *this; 
     }
 
     bool Window::isFramebufferResized() { return m_framebufferResized; }
@@ -251,6 +339,7 @@ namespace Run {
         I_DEBUG_LOG_INFO("Checking if the required GLFW extensions are supported... | RunEngine");
         I_ASSERT_FATAL_ERROR(!glfwVulkanSupported(), "The required GLFW extensions are not supported!");
 
+
         I_DEBUG_LOG_INFO("Creating GLFW window... | RunEngine");
         m_window = glfwCreateWindow(m_size.x, m_size.y, m_title.c_str(), nullptr, nullptr);
 
@@ -262,12 +351,22 @@ namespace Run {
             m_input.keysJustPressed[i] = false;
         }
 
+        for (uint32_t i = 0; i < MAX_MOUSE_BUTTONS; i++) {
+            m_input.mouseButtons[i] = false;
+        }
+
+        for (uint32_t i = 0; i < MAX_GAMEPADS; i++) {
+            m_input.gamePadsConnected[i] = false;
+        }
+
         glfwSetWindowUserPointer(m_window, this);
         glfwSetWindowPosCallback(m_window, windowMovedCallback);
         glfwSetKeyCallback(m_window, keyCallback);
         glfwSetCursorPosCallback(m_window, cursorPositionCallback);
         glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
         glfwSetWindowFocusCallback(m_window, windowFocusCallback);
+        glfwSetMouseButtonCallback(m_window, mouseButtonCallback);
+        glfwSetDropCallback(m_window, windowDropCallback);
     }
 
     void Window::windowMovedCallback(GLFWwindow* window, int xpos, int ypos)
@@ -280,7 +379,6 @@ namespace Run {
 
     void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
-
         if (key > MAX_KEYS)
             return;
 
@@ -293,7 +391,6 @@ namespace Run {
     void Window::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
     {
         Window* win = (Window*)(glfwGetWindowUserPointer(window));
-
 
         win->m_input.mousePos = { (float)xpos, (float)ypos };
     }
@@ -308,7 +405,45 @@ namespace Run {
     void Window::windowFocusCallback(GLFWwindow* window, int focused)
     {
         Window* win = (Window*)(glfwGetWindowUserPointer(window));
-        win->m_focused = focused ? true : false;
+        win->m_focused = (bool)focused;
+    }
+
+    void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+    {
+        if (button > MAX_MOUSE_BUTTONS)
+            return;
+
+        Window* win = (Window*)(glfwGetWindowUserPointer(window));
+
+        win->m_input.mouseButtons[button] = action != GLFW_RELEASE;
+    }
+
+    void Window::joystickCallback(int jid, int event)
+    {
+        I_LOG_ERROR("jid: %d", jid);
+
+        if (jid > MAX_GAMEPADS)
+            return;
+
+        Window* win = (Window*)(glfwGetJoystickUserPointer(jid));
+
+        if (event == GLFW_CONNECTED && glfwJoystickIsGamepad(jid)) {
+            win->m_input.gamePadsConnected[jid] = true;
+        }
+        else 
+            win->m_input.gamePadsConnected[jid] = false;
+
+    }
+
+    void Window::windowDropCallback(GLFWwindow* window, int count, const char** paths)
+    {
+        Window* win = (Window*)(glfwGetWindowUserPointer(window));
+
+        win->m_pathsJustDropped = true;
+
+        for (uint32_t i = 0; i < count; i++) {
+            win->m_dropPaths.push_back(paths[i]);
+        }
     }
 
 }

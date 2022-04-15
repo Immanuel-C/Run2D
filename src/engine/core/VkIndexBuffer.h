@@ -8,16 +8,19 @@
 #include "Vector.h"
 #include "debug.h"
 #include "VkContext.h"
+#include "DynamicExport.h"
 
 #include <array>
 
 namespace Run {
 	namespace Vk {
-		class IndexBuffer
+		class RUN_API IndexBuffer
 		{
 		public:
 			IndexBuffer(uint32_t* indices, size_t indicesSize);
 			IndexBuffer() {}
+
+
 
 			VkBuffer& getVkBuffer();
 

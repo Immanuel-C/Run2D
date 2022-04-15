@@ -15,10 +15,11 @@
 #include "VkPhysicalDevice.h"
 #include "VkGraphicsPipeline.h"
 #include "VkFlags.h"
+#include "DynamicExport.h"
 
 namespace Run {
     namespace Vk {
-        class SwapChain
+        class RUN_API SwapChain
         {
         public:
             SwapChain(Device& device, PhysicalDevice& physicalDevice, GraphicsPipeline& graphicsPipeline, Surface& surface, GLFWwindow*& window, VkSurfaceFormatKHR format, VkPresentModeKHR presentMode, VkExtent2D extent, VkSwapchainKHR oldSwapChain);

@@ -11,10 +11,11 @@
 #include "VkInstance.h"
 #include "VkSurface.h"
 #include "VkPhysicalDevice.h"
+#include "DynamicExport.h"
 
 namespace Run {
     namespace Vk {
-        class Device {
+        class RUN_API Device {
         public:
             Device(PhysicalDevice physicalDevice);
             Device() {}

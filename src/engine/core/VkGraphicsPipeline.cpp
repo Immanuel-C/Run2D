@@ -4,7 +4,8 @@
 namespace Run {
     namespace Vk {
         GraphicsPipeline::GraphicsPipeline(const std::string& vertPath, const std::string& fragPath) 
-            : m_vertFileName { vertPath }, 
+            : m_context { Context::get() },
+              m_vertFileName { vertPath }, 
               m_fragFileName { fragPath }
         {
 
@@ -132,8 +133,7 @@ namespace Run {
             vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
             vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
             vertShaderStageInfo.module = m_shader.vertex;
-            // Entry point
-            vertShaderStageInfo.pName = "main";
+            vertShaderStageInfo.pName = "main"; // Entry point
 
             VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
             fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -242,5 +242,8 @@ namespace Run {
 
             VK_CHECK(vkCreateGraphicsPipelines(m_context.device, nullptr, 1, &pipelineInfo, nullptr, &m_pipeline));
         }
+
+ 
+
     }
 }

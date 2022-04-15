@@ -6,10 +6,11 @@
 #include <array>
 #include "VkInstance.h"
 #include "debug.h"
+#include "DynamicExport.h"
 
 namespace Run {
     namespace Vk {
-        class DebugMessenger {
+        class RUN_API DebugMessenger {
         public:
             DebugMessenger(Instance& instance);
             DebugMessenger() {}

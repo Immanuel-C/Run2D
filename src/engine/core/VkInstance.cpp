@@ -85,15 +85,23 @@ namespace Run {
             instanceCreateInfo.enabledExtensionCount = instanceExtensionNames.size();
             instanceCreateInfo.ppEnabledExtensionNames = instanceExtensionNames.data();
 
-            std::array<const char*, 2> instanceLayerNames = {
+            std::vector<const char*> instanceLayerNames = {
+#if defined(DEBUG) || !defined(NDEBUG)
                 "VK_LAYER_KHRONOS_validation",
+#endif
+#if defined(RUN_VK_LAYER_MONITOR)
                 "VK_LAYER_LUNARG_monitor"
+#endif
             };
 
-            I_ASSERT_FATAL_ERROR(!checkInstanceLayerSupport(instanceLayerNames.data(), instanceLayerNames.size()), "Vulkan instance layer(s) not supported!");
+            // instanceLayerNames size will be zero ifndef RUN_VK_LAYER_MONITOR and not in debug mode
+            // so we dont need to check for extensions or add extensions to instanceCreateInfo
+            if (instanceLayerNames.size()) {
+                I_ASSERT_FATAL_ERROR(!checkInstanceLayerSupport(instanceLayerNames.data(), instanceLayerNames.size()), "Vulkan instance layer(s) not supported!");
 
-            instanceCreateInfo.enabledLayerCount = instanceLayerNames.size();
-            instanceCreateInfo.ppEnabledLayerNames = instanceLayerNames.data();
+                instanceCreateInfo.enabledLayerCount = instanceLayerNames.size();
+                instanceCreateInfo.ppEnabledLayerNames = instanceLayerNames.data();
+            }
 
             I_DEBUG_LOG_INFO("Creating instance... | RunEngine");
             VK_CHECK(vkCreateInstance(&instanceCreateInfo, nullptr, &m_instance));

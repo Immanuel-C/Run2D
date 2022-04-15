@@ -4,13 +4,16 @@
 extern "C" {
 #endif
 
+#pragma warning(disable:4996) 
+
+
 #define FILE_OPEN_SUCCESS 0
 
 #ifdef __linux__
     #include <string.h>
 #endif
 
-void _platformLog(FILE* stream, const char* msg, int colour) {
+RUN_API void _platformLog(FILE* stream, const char* msg, int colour) {
         switch (colour) {
             case _I_COLOUR_WHITE: {
                 // Check out https://www.tutorialspoint.com/how-to-output-colored-text-to-a-linux-terminal
@@ -50,7 +53,7 @@ int _i_vscprintf (const char * format, va_list pargs) {
     return retval; 
 }   
 
-void _i_log(FILE* stream, const char* prefix, const char* msg, int colour, ...) {
+RUN_API void _i_log(FILE* stream, const char* prefix, const char* msg, int colour, ...) {
     char* fmtBuffer = (char*)malloc( (strlen(prefix) + 1) * sizeof(char) + (strlen(msg) + 1) * sizeof(char) );
     // Copy formated string into the fmtBuffer
     sprintf(fmtBuffer, "%s%s", prefix, msg);
@@ -85,7 +88,7 @@ void _i_log(FILE* stream, const char* prefix, const char* msg, int colour, ...) 
     free(msgBuffer);
 }
 
-void _f_i_log(const char* fileName, const char* msg, const char* mode, ...) {
+RUN_API void _f_i_log(const char* fileName, const char* msg, const char* mode, ...) {
     va_list args;
 
     va_start(args, mode);
@@ -102,7 +105,7 @@ void _f_i_log(const char* fileName, const char* msg, const char* mode, ...) {
     FILE* fStream;    
     
     // This is different from sprintf becuase it takes in a va_list instead of variable args
-    #if defined(_MSVC_VER) || defined(_WIN32) && defined(__clang__)
+    #if defined(_MSC_VER) || defined(_WIN32) && defined(__clang__)
         vsprintf_s(msgBuffer, msgLen, msg, args);
         if (fopen_s(&fStream, fileName, mode) != FILE_OPEN_SUCCESS) {
             fprintf(stderr, "ILog Internal Error: Failed to open file: %s", fileName);
